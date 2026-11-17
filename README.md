@@ -42,50 +42,168 @@ flowchart LR
 
 The CMS is the operator surface, the FastAPI service handles generation and processing, and each project is persisted under `projects/<projectId>/`.
 
-## Quickstart
+---
 
-### 1. Install Dependencies (macOS with Homebrew)
+## Quickstart — macOS
+
+### 1. Install dependencies
 
 ```bash
 brew install uv node ffmpeg
 ```
 
-You also need:
-- Python 3.12
-- npm (comes with Node)
-
-### 2. Configure Environment
+### 2. Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Add your API credentials in `.env`:
-- `OPENAI_API_KEY`
-- `ELEVENLABS_API_KEY`
+Fill in `.env`:
 
-### 3. Install Project Dependencies
+```env
+OPENAI_API_KEY=sk-...
+ELEVENLABS_API_KEY=sk_...
+```
+
+### 3. Install project dependencies
 
 ```bash
 uv sync
 npm install
 ```
 
-### 4. Start Everything
+### 4. Start everything
 
 ```bash
 make dev
 ```
 
-If you want hotspot model support while using `make dev`, run:
+Open `http://127.0.0.1:3000`.
 
-```bash
-make dev HOTSPOT=1
+---
+
+## Quickstart — Windows
+
+`make` is not available on Windows. Each service is started manually in a separate terminal. Follow these steps exactly.
+
+### 1. Install prerequisites
+
+| Tool | Where to get it | Notes |
+|------|----------------|-------|
+| **Node.js** | https://nodejs.org (LTS) | Includes npm |
+| **uv** | Run the command below | Python + package manager |
+| **ffmpeg** | https://ffmpeg.org/download.html | Extract and add `bin\` to PATH |
+| **git** | https://git-scm.com | If not already installed |
+
+Install `uv` from PowerShell:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Open:
-- CMS: `http://127.0.0.1:3000`
-- API: `http://127.0.0.1:8001`
+> **Important:** The installer places `uv.exe` in `%USERPROFILE%\.local\bin`. This directory is added to the *user* PATH, not the *system* PATH. Node.js spawns child processes using the system PATH, so it cannot find `uv` even after installation — unless you open a **new** terminal after installing.
+
+### 2. Add `uv` to PATH permanently
+
+Add this line to your PowerShell profile so every new session includes it:
+
+```powershell
+# Open your profile file:
+notepad $PROFILE
+
+# Add this line and save:
+$env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+```
+
+Close and reopen PowerShell, then verify:
+
+```powershell
+uv --version    # should print: uv x.x.x
+node --version  # should print: v22.x.x or similar
+ffmpeg -version # should print: ffmpeg version ...
+```
+
+> `uv` manages its own Python 3.12 environment automatically. You do not need to install Python separately.
+
+### 3. Configure environment
+
+```powershell
+copy .env.example .env
+```
+
+Open `.env` and fill in your API keys:
+
+```env
+OPENAI_API_KEY=sk-...
+ELEVENLABS_API_KEY=sk_...
+```
+
+Save and close.
+
+> **If your OpenAI account has no credits:** leave `OPENAI_API_KEY` empty and the backend will skip OpenAI entirely. You can use another provider if one is configured.
+
+### 4. Install project dependencies
+
+Run once from the project root:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+cd f:\path\to\news-to-video
+
+uv sync       # installs Python dependencies into .venv
+npm install   # installs Node dependencies
+```
+
+### 5. Start the API — Terminal 1
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+cd f:\path\to\news-to-video
+uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8001
+```
+
+Wait for this line before moving on:
+
+```
+INFO:     Uvicorn running on http://0.0.0.0:8001
+```
+
+### 6. Start the CMS — Terminal 2
+
+Open a **new** PowerShell terminal:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+cd f:\path\to\news-to-video
+npm run dev:cms
+```
+
+Wait for:
+
+```
+✓ Ready on http://localhost:3000
+```
+
+Open **http://localhost:3000** in your browser.
+
+### Stopping the servers
+
+Press `Ctrl+C` in each terminal, or kill by port:
+
+```powershell
+# Find the PID for a port:
+Get-NetTCPConnection -LocalPort 8001 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Get-Process -Id $_ }
+Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Get-Process -Id $_ }
+
+# Kill by PID:
+Stop-Process -Id <PID> -Force
+```
+
+### After changing `.env`
+
+Both services read `.env` only at startup. After editing `.env`, stop and restart both terminals.
+
+---
 
 ## Docker Compose
 
@@ -100,6 +218,8 @@ Docker Compose reads the same local `.env` file for values such as `OPENAI_API_K
 Open:
 - CMS: `http://127.0.0.1:3000`
 - API: `http://127.0.0.1:8001`
+
+---
 
 ## Projects and Folder Structure
 
@@ -139,6 +259,8 @@ Key files:
 - `working/*`: data generated during `generate` and `process`, plus UI edits
 - `output/*`: final render-ready artifacts
 
+---
+
 ## Fetchers
 
 Fetchers are a drop-in plugin architecture to add your own ways to get content into the system.
@@ -147,7 +269,7 @@ Each fetcher lives under `fetchers/<id>/` and defines:
 - input fields (`fetcher.json`)
 - implementation (`fetcher.py`)
 
-In production, each brand/newsroom should build a proper fetcher integration against its own content APIs to get the highest quality data. 
+The fetcher scripts are run via `uv run python fetcher.py ...`. On Windows, the CMS resolves the absolute path to `uv.exe` at `%USERPROFILE%\.local\bin\uv.exe` because Node.js child processes do not inherit the user PATH. If you move or reinstall `uv`, this path must remain valid.
 
 Included fetchers:
 - `reuters`: requires Reuters API credentials
@@ -155,6 +277,8 @@ Included fetchers:
 - `web`: generic HTML fetcher for local testing and demos
 
 The web fetcher is useful for quick testing, but should not be treated as a production-grade ingestion path.
+
+---
 
 ## Brands
 
@@ -173,13 +297,17 @@ To add a new brand:
 1. Copy `brands/default.json`
 2. Rename to your brand id (for example `brands/mybrand.json`)
 3. Update logo, wipes, colors, prompts, and voice settings
-4. Restart app (or refresh) and select the new brand in CMS
+4. Restart the API and refresh the CMS
+
+---
 
 ## Player
 
 Rendering is built with [Remotion](https://www.remotion.dev/).
 
-This project uses Remotion for composition and local rendering. For commercial use, verify that your usage complies with Remotion license terms. You might need a license. 
+This project uses Remotion for composition and local rendering. For commercial use, verify that your usage complies with Remotion license terms. You might need a license.
+
+---
 
 ## Hotspot Model
 
@@ -198,6 +326,8 @@ If you start with `make dev`, include the hotspot group there too:
 ```bash
 make dev HOTSPOT=1
 ```
+
+---
 
 ## Credits
 
