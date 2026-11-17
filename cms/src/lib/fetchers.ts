@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { z } from "zod";
@@ -224,7 +225,13 @@ export async function runFetcher(
   }
 
   // Always replace an existing project directory for repeated imports.
-  const command = "uv";
+  // uv is installed to the user-local bin which cmd.exe (used by Node) does not
+  // load, so resolve the absolute path as a fallback before using the bare name.
+  const uvCandidates = [
+    `${process.env.USERPROFILE}\\.local\\bin\\uv.exe`,
+    `${process.env.HOME}/.local/bin/uv`,
+  ];
+  const command = uvCandidates.find((p) => p && existsSync(p)) ?? "uv";
   const args = ["run", "python", scriptPath, ...fetcherArgs, "--force"];
   const { code, stdout, stderr } = await runCommand(command, args, repoRoot());
 
