@@ -284,7 +284,15 @@ async function buildManuscriptFromBackend(
     meta: {
       title: backendManuscript.meta.title,
       byline: backendManuscript.meta.byline,
-      pubdate: backendManuscript.meta.pubdate,
+      pubdate: (() => {
+        const raw = backendManuscript.meta.pubdate;
+        if (!raw) return new Date().toISOString();
+        // Unix timestamp (seconds)
+        if (/^\d+$/.test(String(raw))) return new Date(Number(raw) * 1000).toISOString();
+        // Already ISO string
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+      })(),
       articleUrl: projectId,
       uniqueId: backendManuscript.meta.uniqueId,
     },
