@@ -87,14 +87,14 @@ const Segment: FC<SegmentProps> = ({
                     <Input.TextArea style={{ width: "100%" }} rows={5} />
                   </Form.Item>
                   <div className="mt-1 text-[12px] text-gray-500">
-                    Add pronunciation hints in [brackets] after words
+                    Thêm gợi ý phát âm trong [ngoặc vuông] sau từ
                   </div>
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16}>
               <Col span={8} key="mood">
-                <Form.Item label="Mood" name={[position, "mood"]}>
+                <Form.Item label="Tâm trạng" name={[position, "mood"]}>
                   <Select
                     options={moods.map((m) => ({
                       value: m.id,
@@ -116,7 +116,7 @@ const Segment: FC<SegmentProps> = ({
                 </Form.Item>
               </Col>
               <Col span={8} key="placement">
-                <Form.Item label="Placement" name={[position, "style"]}>
+                <Form.Item label="Vị trí chữ" name={[position, "style"]}>
                   <Select
                     options={textPlacements.map((c) => ({
                       value: c.id,
@@ -130,7 +130,7 @@ const Segment: FC<SegmentProps> = ({
             <Row>
               <Form.Item
                 name={[position, "customAudio"]}
-                label="Custom audio"
+                label="Âm thanh tùy chỉnh"
                 className="w-full"
               >
                 <AudioRecorder />
@@ -139,21 +139,21 @@ const Segment: FC<SegmentProps> = ({
           </Flex>
           <Form.Item>
             <Flex vertical gap="small">
-              <Tooltip title="Add segment below">
+              <Tooltip title="Thêm đoạn bên dưới">
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={onAdd}
                 />
               </Tooltip>
-              <Tooltip title="Duplicate segment">
+              <Tooltip title="Nhân đôi đoạn">
                 <Button
                   type="primary"
                   icon={<CopyOutlined />}
                   onClick={onDuplicate}
                 />
               </Tooltip>
-              <Tooltip title="Delete segment">
+              <Tooltip title="Xóa đoạn">
                 <Button
                   danger
                   type="primary"

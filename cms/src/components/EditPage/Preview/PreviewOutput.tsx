@@ -153,7 +153,7 @@ const PreviewOutput = ({ tabs }: { tabs: Tab[] }) => {
             {(state.loading || state.updating) && (
               <div className="z-10 absolute inset-0 flex justify-center items-center bg-gray-500 bg-opacity-75">
                 <span className="font-semibold text-white text-lg">
-                  Preview is generating...
+                  Đang tạo bản xem trước...
                 </span>
               </div>
             )}
@@ -161,7 +161,7 @@ const PreviewOutput = ({ tabs }: { tabs: Tab[] }) => {
         </>
       )}
       <div className="flex justify-center items-end gap-2 mt-4 w-full">
-        <Tooltip title="Layout: vertical or horizontal">
+        <Tooltip title="Bố cục: dọc hoặc ngang">
           <Segmented
             options={[
               { value: "Vertical", icon: <MobileOutlined /> },
@@ -181,7 +181,7 @@ const PreviewOutput = ({ tabs }: { tabs: Tab[] }) => {
           disabled={state.loading || state.updating}
           type="primary"
         >
-          Update
+          Cập nhật
         </Button>
         <Button
           disabled={state.loading || state.updating}
@@ -192,7 +192,7 @@ const PreviewOutput = ({ tabs }: { tabs: Tab[] }) => {
             state.downloadOpen = true;
           }}
         >
-          Download
+          Tải xuống
         </Button>
         <DownloadModal
           open={state.downloadOpen}

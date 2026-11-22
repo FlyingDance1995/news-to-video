@@ -19,22 +19,10 @@ import { useGlobalState } from "@/state/globalState";
 import { logAIData } from "@/actions/logAIData";
 
 const videoTypes = [
-  {
-    name: "Vertical",
-    description: "Vertical video (1080x1920)",
-  },
-  {
-    name: "Horizontal",
-    description: "Horizontal video (1920x1080)",
-  },
-  {
-    name: "Sound only",
-    description: "Narration audio (mp3)",
-  },
-  {
-    name: "Videofy Project",
-    description: "Project file (JSON)",
-  },
+  { name: "Vertical",        description: "Video dọc (1080x1920)" },
+  { name: "Horizontal",      description: "Video ngang (1920x1080)" },
+  { name: "Sound only",      description: "Âm thanh thuyết minh (mp3)" },
+  { name: "Videofy Project", description: "File dự án (JSON)" },
 ];
 
 interface Props {
@@ -172,14 +160,14 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
       const message = error instanceof Error ? error.message : "Unknown error";
       state.error = message;
       notification.error({
-        title: "Download failed",
+        title: "Tải xuống thất bại",
         description: message,
         duration: 0,
       });
     }
   };
 
-  if (!config) return <div>Error: No config detected.</div>;
+  if (!config) return <div>Lỗi: Không tìm thấy cấu hình.</div>;
 
   const defaultExportType =
     config.exportDefaults?.exportType &&
@@ -189,7 +177,7 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
 
   return (
     <Modal open={open} onCancel={() => setOpen(false)} footer={null}>
-      <Typography.Title level={2}>Download</Typography.Title>
+      <Typography.Title level={2}>Tải xuống</Typography.Title>
 
       <Form<FormType>
         form={downloadForm}
@@ -216,7 +204,7 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
               : true,
         }}
       >
-        <Form.Item name="exportType" label="Export type">
+        <Form.Item name="exportType" label="Loại xuất">
           <Radio.Group
             style={{
               display: "flex",
@@ -232,7 +220,7 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
           />
         </Form.Item>
 
-        <Form.Item label="Title" name="title">
+        <Form.Item label="Tiêu đề" name="title">
           <Input className="w-full" />
         </Form.Item>
 
@@ -240,13 +228,13 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
           <Form.Item label="Logo" name="logo" valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item label="Audio" name="audio" valuePropName="checked">
+          <Form.Item label="Âm thanh" name="audio" valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item label="Voiceover" name="voice" valuePropName="checked">
+          <Form.Item label="Giọng đọc" name="voice" valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item label="Music" name="music" valuePropName="checked">
+          <Form.Item label="Nhạc nền" name="music" valuePropName="checked">
             <Switch />
           </Form.Item>
         </Flex>
@@ -255,15 +243,15 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
           <Form.Item shouldUpdate>
             {({ getFieldValue }) => {
               const exportType = getFieldValue("exportType");
-              let buttonText = "Process video";
+              let buttonText = "Xử lý video";
               if (exportType === "Videofy Project") {
-                buttonText = "Download";
+                buttonText = "Tải xuống";
               } else if (exportType === "Sound only") {
-                buttonText = "Download audio";
+                buttonText = "Tải âm thanh";
               } else if (state.isProcessing) {
-                buttonText = "Rendering locally...";
+                buttonText = "Đang render...";
               } else if (state.downloadUrl) {
-                buttonText = "Re-render";
+                buttonText = "Render lại";
               }
 
               return (
@@ -288,13 +276,13 @@ const DownloadModal: FC<Props> = ({ open, setOpen }) => {
                 type="primary"
                 size="large"
               >
-                Download video
+                Tải video về
               </Button>
             </Form.Item>
           )}
         </Flex>
 
-        {state.error && <Alert type="error" message={`Error: ${state.error}`} />}
+        {state.error && <Alert type="error" message={`Lỗi: ${state.error}`} />}
       </Form>
     </Modal>
   );

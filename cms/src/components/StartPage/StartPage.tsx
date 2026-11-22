@@ -47,7 +47,7 @@ const StartPage = () => {
 
   const state = useReactive({
     loading: false,
-    loadingMessage: "Generating video...",
+    loadingMessage: "Đang tạo video...",
   });
   const { notification } = App.useApp();
   const {
@@ -150,17 +150,17 @@ const StartPage = () => {
       return;
     }
     state.loading = true;
-    state.loadingMessage = "Fetching article...";
+    state.loadingMessage = "Đang tải bài viết...";
     try {
       const fetchResult = await runFetcherPlugin({
         fetcherId,
         inputs: values.inputs || {},
       });
 
-      state.loadingMessage = "Applying brand settings...";
+      state.loadingMessage = "Đang áp dụng cài đặt thương hiệu...";
       await setProjectBrand(fetchResult.projectId, brand.id);
 
-      state.loadingMessage = "Loading project configuration...";
+      state.loadingMessage = "Đang tải cấu hình dự án...";
       const [projects, configs] = await Promise.all([getProjects(), getConfigs()]);
       const project = projects.find((p) => p.id === fetchResult.projectId) || {
         id: fetchResult.projectId,
@@ -184,7 +184,7 @@ const StartPage = () => {
 
       setConfig({ ...configRow, config: customizedConfig });
 
-      state.loadingMessage = "Generating manuscript...";
+      state.loadingMessage = "Đang tạo kịch bản...";
       const manuscript = await generateManuscript(fetchResult.projectId, customizedConfig);
 
       if (!manuscript) {
@@ -234,17 +234,17 @@ const StartPage = () => {
       if (error instanceof Error) {
         notification.error({ title: error.message, duration: 0 });
       } else {
-        notification.error({ title: "Failed to fetch article", duration: 0 });
+        notification.error({ title: "Không thể tải bài viết", duration: 0 });
       }
     } finally {
       state.loading = false;
-      state.loadingMessage = "Generating video...";
+      state.loadingMessage = "Đang tạo video...";
     }
   };
 
   if (loadingFetchers || loadingBrands) {
     return (
-      <Spin description="Loading fetchers and brands..." fullscreen delay={500} />
+      <Spin description="Đang tải dữ liệu..." fullscreen delay={500} />
     );
   }
 
@@ -254,7 +254,7 @@ const StartPage = () => {
         Videofy
       </Title>
       <Paragraph style={{ marginBottom: 36 }}>
-        Select a fetcher, provide inputs, and generate a video.
+        Chọn nguồn tin, nhập thông tin và tạo video.
       </Paragraph>
       <Card style={{ width: "100%", maxWidth: "80ch" }}>
         {!hasFetchers && (
@@ -262,8 +262,8 @@ const StartPage = () => {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            message="No fetchers found"
-            description="Add fetchers under minimal/fetchers/<fetcherId>/fetcher.json, then refresh."
+            message="Không tìm thấy nguồn tin"
+            description="Thêm fetcher vào minimal/fetchers/<fetcherId>/fetcher.json rồi tải lại trang."
           />
         )}
         {!hasBrands && (
@@ -271,12 +271,12 @@ const StartPage = () => {
             type="warning"
             showIcon
             style={{ marginBottom: 16 }}
-            message="No brands found"
-            description="Add brand json files under minimal/brands/, then refresh."
+            message="Không tìm thấy thương hiệu"
+            description="Thêm file JSON thương hiệu vào minimal/brands/ rồi tải lại trang."
           />
         )}
         <Form form={form} onFinish={loadManuscript} layout="vertical">
-          <Form.Item name="fetcherId" label="Fetcher" rules={[{ required: true }]}>
+          <Form.Item name="fetcherId" label="Nguồn tin" rules={[{ required: true }]}>
             <Select
               showSearch
               filterOption={(input, option) =>
@@ -311,7 +311,7 @@ const StartPage = () => {
               <Input placeholder={field.placeholder} />
             </Form.Item>
           ))}
-          <Form.Item name="brandId" label="Brand" rules={[{ required: true }]}>
+          <Form.Item name="brandId" label="Thương hiệu" rules={[{ required: true }]}>
             <Select
               showSearch
               filterOption={(input, option) =>
@@ -328,7 +328,7 @@ const StartPage = () => {
           </Form.Item>
           <Form.Item noStyle>
             <Form.Item
-              label="Custom prompt"
+              label="Prompt tùy chỉnh"
               name="prompt"
               style={{ marginBottom: 0 }}
             >
@@ -337,7 +337,7 @@ const StartPage = () => {
           </Form.Item>
           {selectedBrand ? (
             <Paragraph type="secondary" style={{ marginTop: 8 }}>
-              Prompt source: {selectedBrand.brandName}
+              Nguồn prompt: {selectedBrand.brandName}
             </Paragraph>
           ) : null}
           <Form.Item style={{ marginTop: 16 }}>
@@ -357,7 +357,7 @@ const StartPage = () => {
                 size="large"
                 disabled={!hasFetchers || !hasBrands}
               >
-                Generate video
+                Tạo video
               </Button>
             )}
           </Form.Item>

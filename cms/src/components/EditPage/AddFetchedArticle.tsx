@@ -33,7 +33,7 @@ const AddFetchedArticle: FC<AddFetchedArticleProps> = ({
 
   const state = useReactive({
     loading: false,
-    loadingMessage: "Fetching article...",
+    loadingMessage: "Đang tải bài viết...",
   });
 
   const selectedFetcherId = Form.useWatch("fetcherId", form);
@@ -78,21 +78,21 @@ const AddFetchedArticle: FC<AddFetchedArticleProps> = ({
 
   const handleAddArticle = async (values: FormType) => {
     if (!config?.config) {
-      notification.error({ title: "Config is not loaded yet." });
+      notification.error({ title: "Cấu hình chưa được tải." });
       return;
     }
     state.loading = true;
-    state.loadingMessage = "Fetching article...";
+    state.loadingMessage = "Đang tải bài viết...";
     try {
       const fetchResult = await runFetcherPlugin({
         fetcherId: values.fetcherId,
         inputs: values.inputs || {},
       });
 
-      state.loadingMessage = "Applying brand settings...";
+      state.loadingMessage = "Đang áp dụng cài đặt thương hiệu...";
       await setProjectBrand(fetchResult.projectId, brandId || "default");
 
-      state.loadingMessage = "Generating manuscript...";
+      state.loadingMessage = "Đang tạo kịch bản...";
       const manuscript = await generateManuscript(fetchResult.projectId, config.config);
       const cleanedManuscript = {
         ...manuscript,
@@ -112,23 +112,23 @@ const AddFetchedArticle: FC<AddFetchedArticleProps> = ({
       setOpen(false);
       form.resetFields();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to add article";
+      const message = error instanceof Error ? error.message : "Không thể thêm bài viết";
       notification.error({ title: message, duration: 0 });
     } finally {
       state.loading = false;
-      state.loadingMessage = "Fetching article...";
+      state.loadingMessage = "Đang tải bài viết...";
     }
   };
 
   return (
     <Modal
-      title="Add Article"
+      title="Thêm bài viết"
       open={open}
       onCancel={handleClose}
       width={700}
       footer={[
         <Button key="cancel" onClick={handleClose} disabled={state.loading}>
-          Cancel
+          Hủy
         </Button>,
         <Button
           key="submit"
@@ -137,15 +137,15 @@ const AddFetchedArticle: FC<AddFetchedArticleProps> = ({
           onClick={() => form.submit()}
           disabled={loadingFetchers}
         >
-          {state.loading ? state.loadingMessage : "Add Article"}
+          {state.loading ? state.loadingMessage : "Thêm bài viết"}
         </Button>,
       ]}
     >
       {loadingFetchers ? (
-        <Spin description="Loading fetchers..." />
+        <Spin description="Đang tải nguồn tin..." />
       ) : (
         <Form form={form} layout="vertical" onFinish={handleAddArticle}>
-          <Form.Item name="fetcherId" label="Fetcher" rules={[{ required: true }]}>
+          <Form.Item name="fetcherId" label="Nguồn tin" rules={[{ required: true }]}>
             <Select
               showSearch
               filterOption={(input, option) =>
@@ -170,7 +170,7 @@ const AddFetchedArticle: FC<AddFetchedArticleProps> = ({
               preserve={false}
               rules={
                 field.required
-                  ? [{ required: true, message: `${field.label} is required` }]
+                  ? [{ required: true, message: `${field.label} là bắt buộc` }]
                   : undefined
               }
             >

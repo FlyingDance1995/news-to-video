@@ -55,18 +55,18 @@ const EditPage: FC = () => {
         );
         if (response.status === 404) {
           notification.warning({
-            title: "Project no longer exists",
-            description: "The generation was removed or the project folder was deleted.",
+            title: "Dự án không còn tồn tại",
+            description: "Generation đã bị xóa hoặc thư mục dự án không còn.",
           });
           router.replace("/");
           return;
         }
         if (!response.ok) {
-          throw new Error("Failed to fetch generation");
+          throw new Error("Không thể tải generation");
         }
         const generation = await response.json();
         if (!generation.config || !generation.projectId) {
-          throw new Error("Generation payload is missing config or projectId");
+          throw new Error("Dữ liệu generation thiếu config hoặc projectId");
         }
         setConfig({
           projectId: generation.projectId,
@@ -85,7 +85,7 @@ const EditPage: FC = () => {
       } catch (error) {
         console.error(error);
         state.loadError =
-          error instanceof Error ? error.message : "Failed to load generation";
+          error instanceof Error ? error.message : "Không thể tải generation";
       } finally {
         state.loadingGeneration = false;
       }
@@ -142,18 +142,18 @@ const EditPage: FC = () => {
         {state.loadError ? (
           <Alert
             type="error"
-            message="Failed to load project"
+            message="Không thể tải dự án"
             description={state.loadError}
             action={
               <Button type="primary" onClick={() => router.replace("/")}>
-                Back to start
+                Quay lại trang chủ
               </Button>
             }
           />
         ) : (
           <Flex vertical align="center" gap="small">
             <Spin />
-            <Typography.Text>Loading project...</Typography.Text>
+            <Typography.Text>Đang tải dự án...</Typography.Text>
           </Flex>
         )}
       </Flex>
@@ -179,18 +179,18 @@ const EditPage: FC = () => {
             Videofy
           </Typography.Title>
           <Flex gap="small">
-            <Tooltip title="Share video">
+            <Tooltip title="Chia sẻ video">
               <Button
                 icon={<ShareAltOutlined />}
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
-                  message.success("Video URL copied to clipboard.", 5);
+                  message.success("Đã sao chép URL video vào clipboard.", 5);
                 }}
               >
-                Share
+                Chia sẻ
               </Button>
             </Tooltip>
-            <Tooltip title="Edit theme">
+            <Tooltip title="Chỉnh sửa giao diện">
               <Button
                 type={state.editTheme ? "primary" : "default"}
                 icon={<SettingOutlined />}
