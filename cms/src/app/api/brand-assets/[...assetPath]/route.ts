@@ -27,7 +27,7 @@ function resolveSafeAssetPath(parts: string[]): string | null {
   }
 
   const fullPath = join(BRAND_ASSET_ROOT, relativePath);
-  const normalizedRoot = `${BRAND_ASSET_ROOT}/`;
+  const normalizedRoot = normalize(BRAND_ASSET_ROOT + "/");
   const normalizedFullPath = normalize(fullPath);
   if (!normalizedFullPath.startsWith(normalizedRoot)) {
     return null;
