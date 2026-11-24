@@ -58,6 +58,17 @@ const Segment: FC<SegmentProps> = ({
     "manuscript",
     "media",
   ]);
+
+  const vietnameseText: string | undefined = form.getFieldValue([
+    "tabs",
+    manuscriptIndex,
+    "manuscript",
+    "segments",
+    position,
+    "texts",
+    0,
+    "vietnameseText",
+  ]);
   return (
     <div ref={setNodeRef} style={style}>
       <Card key={id} className="w-full" classNames={{ body: "pb-0" }}>
@@ -86,6 +97,17 @@ const Segment: FC<SegmentProps> = ({
                   <Form.Item noStyle name={[position, "text"]}>
                     <Input.TextArea style={{ width: "100%" }} rows={5} />
                   </Form.Item>
+                  {vietnameseText && (
+                    <div
+                      className="mt-2 px-3 py-2 rounded text-[13px] text-gray-700 bg-gray-50 border border-gray-200"
+                      style={{ lineHeight: "1.6" }}
+                    >
+                      <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">
+                        Tiếng Việt
+                      </span>
+                      {vietnameseText}
+                    </div>
+                  )}
                   <div className="mt-1 text-[12px] text-gray-500">
                     Thêm gợi ý phát âm trong [ngoặc vuông] sau từ
                   </div>

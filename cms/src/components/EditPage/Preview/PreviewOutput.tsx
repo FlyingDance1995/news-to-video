@@ -129,46 +129,40 @@ const PreviewOutput = ({ tabs }: { tabs: Tab[] }) => {
   );
 
   return (
-    <div className="top-0 sticky flex flex-col w-full">
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
       {state.error && !state.updating && !state.loading ? (
         <ErrorCard errorMessage={state.error} />
       ) : !processedManuscripts.length && (state.updating || state.loading) ? (
         <LoadingCard />
       ) : (
-        <>
-          <div className="relative">
-            <Player
-              ref={playerRef}
-              height={state.previewType === "Vertical" ? 1920 : 1080}
-              width={state.previewType === "Vertical" ? 1080 : 1920}
-              manuscripts={processedManuscripts}
-              playerConfig={playerConfig}
-              style={{
-                maxHeight:
-                  state.previewType === "Vertical" ? "80dvh" : undefined,
+        <div className="relative">
+          <Player
+            ref={playerRef}
+            height={state.previewType === "Vertical" ? 1920 : 1080}
+            width={state.previewType === "Vertical" ? 1080 : 1920}
+            manuscripts={processedManuscripts}
+            playerConfig={playerConfig}
+            style={{
                 width: "100%",
                 aspectRatio: state.previewType === "Vertical" ? "9/16" : "16/9",
+                maxHeight: state.previewType === "Vertical" ? "calc(100dvh - 160px)" : undefined,
               }}
-            />
-            {(state.loading || state.updating) && (
-              <div className="z-10 absolute inset-0 flex justify-center items-center bg-gray-500 bg-opacity-75">
-                <span className="font-semibold text-white text-lg">
-                  Đang tạo bản xem trước...
-                </span>
-              </div>
-            )}
-          </div>
-        </>
+          />
+          {(state.loading || state.updating) && (
+            <div className="z-10 absolute inset-0 flex justify-center items-center bg-gray-500 bg-opacity-75">
+              <span className="font-semibold text-white text-lg">
+                Đang tạo bản xem trước...
+              </span>
+            </div>
+          )}
+        </div>
       )}
-      <div className="flex justify-center items-end gap-2 mt-4 w-full">
+      <div className="flex justify-center items-center gap-2 mt-3 w-full" style={{ flexShrink: 0 }}>
         <Tooltip title="Bố cục: dọc hoặc ngang">
           <Segmented
             options={[
               { value: "Vertical", icon: <MobileOutlined /> },
-              {
-                value: "Horizontal",
-                icon: <DesktopOutlined />,
-              },
+              { value: "Horizontal", icon: <DesktopOutlined /> },
             ]}
             value={state.previewType}
             onChange={(value) => {

@@ -50,6 +50,7 @@ class TextLine(BaseModel):
     start: float | None = None
     end: float | None = None
     displayText: str | None = None
+    vietnameseText: str | None = None
 
 
 class Hotspot(BaseModel):
@@ -167,3 +168,4 @@ class UploadResponse(BaseModel):
 
 class SummarizationResult(BaseModel):
     lines: list[str]
+    vietnamese_lines: list[str] = Field(default_factory=list)

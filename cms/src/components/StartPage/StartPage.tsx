@@ -13,6 +13,7 @@ import {
   Flex,
   Form,
   Input,
+  Radio,
   Select,
   Spin,
   Typography,
@@ -29,6 +30,10 @@ import {
 } from "@/api";
 import { LoadingOutlined } from "@ant-design/icons";
 
+const PROMPT_LONG = `You are a journalist writing voice scripts for SoMe videos summarising the daily news. You will receive a news article in the user input. Lets do this step by step: \n 1: Read the article and understand what the article is about \n 2: Note the key points that are important for the reader to undersand. What is new, surprising or interesting? \n 3: Summarize these points in a way that is factual, but also engaging and informative. Go straigt to the content of the article, no welcome/padding text. \n 4: The script should be in American and consist of content lasting approximately 2 to 10 minutes. Each 1 or 2 sentences correspond to a single frame or a short video clip lasting less than 4 seconds, sourced from relevant content found on social media or in news outlets that pertains to those sentences.. \n 5: The last line should offer some form of completion or conclusion to the article. Make sure that all major perspectives are corectly represented in the script.\n 6: Then rewrite each line so it is a gramatically correct, punchy. Make sure the sentence uses simple words so it is easy to read for the voice actor. \n 7: Do not include encodings or special characters that can not be pronounced by the voice actor.`;
+
+const PROMPT_SHORT = `You are a journalist writing voice scripts for SoMe videos summarising the daily news. You will receive a news article in the user input. Lets do this step by step: \n 1: Read the article and understand what the article is about \n 2: Note the key points that are important for the reader to undersand. What is new, surprising or interesting? \n 3: Summarize these points in a way that is factual, but also engaging and informative. Go straigt to the content of the article, no welcome/padding text. \n 4: The script should be in American and consist of no more than 3 lines of text. Each line should give the readers new and relevant information about the article. \n 5: The last line should offer some form of completion or conclusion to the article. Make sure that all major perspectives are corectly represented in the script.\n 6: Then rewrite each line so it is a gramatically correct, punchy and engaging sentence of max 12 words. Make sure the sentence uses simple words so it is easy to read for the voice actor. \n 7: Do not include encodings or special characters that can not be pronounced by the voice actor.`;
+
 const { Title, Paragraph } = Typography;
 const cookies = new Cookies();
 
@@ -36,6 +41,7 @@ type FormType = {
   fetcherId: string;
   brandId: string;
   prompt: string;
+  videoType: "long" | "short";
   inputs: Record<string, string>;
 };
 
@@ -62,6 +68,7 @@ const StartPage = () => {
   const [form] = Form.useForm<FormType>();
   const selectedFetcherId = Form.useWatch("fetcherId", form);
   const selectedBrandId = Form.useWatch("brandId", form);
+  const selectedVideoType = Form.useWatch("videoType", form);
   const selectedFetcher = useMemo(
     () => fetchers?.find((fetcher) => fetcher.id === selectedFetcherId),
     [fetchers, selectedFetcherId]
@@ -104,7 +111,8 @@ const StartPage = () => {
     const initialBrand = brands[0];
     form.setFieldsValue({
       brandId: initialBrand.id,
-      prompt: initialBrand.scriptPrompt || "",
+      prompt: PROMPT_LONG,
+      videoType: "long" as const,
     });
   }, [brands, form]);
 
@@ -133,6 +141,13 @@ const StartPage = () => {
     }
     form.setFieldValue("inputs", {});
   }, [selectedFetcherId, form]);
+
+  // Swap prompt khi đổi loại video
+  useEffect(() => {
+    if (!selectedVideoType) return;
+    const nextPrompt = selectedVideoType === "long" ? PROMPT_LONG : PROMPT_SHORT;
+    form.setFieldValue("prompt", nextPrompt);
+  }, [selectedVideoType, form]);
 
   const loadManuscript = async (values: FormType) => {
     const { prompt, fetcherId, brandId } = values;
@@ -327,6 +342,16 @@ const StartPage = () => {
             />
           </Form.Item>
           <Form.Item noStyle>
+            <Form.Item
+              name="videoType"
+              label="Độ dài video"
+              style={{ marginBottom: 8 }}
+            >
+              <Radio.Group>
+                <Radio.Button value="long">🎬 Video dài (2–10 phút)</Radio.Button>
+                <Radio.Button value="short">⚡ Video ngắn (3 dòng)</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
             <Form.Item
               label="Prompt tùy chỉnh"
               name="prompt"

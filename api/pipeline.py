@@ -80,9 +80,9 @@ class PipelineService:
         article: ArticleInput,
         resolved_config: ResolvedConfig,
         script_prompt_override: str | None,
-    ) -> list[str]:
+    ) -> tuple[list[str], list[str]]:
         if article.script_lines:
-            return article.script_lines
+            return article.script_lines, [""] * len(article.script_lines)
 
         override_prompt = (
             script_prompt_override.strip()
@@ -249,6 +249,7 @@ class PipelineService:
         self,
         project_id: str,
         script_lines: list[str],
+        vietnamese_lines: list[str],
         analysis_result: AssetAnalysisResult,
         analysis_assets_by_id: dict[str, dict[str, Any]],
         default_camera_movements: list[str],
@@ -293,7 +294,11 @@ class PipelineService:
             segments.append(
                 Segment(
                     id=index + 1,
-                    texts=[TextLine(text=script_line, line_id=index + 1)],
+                    texts=[TextLine(
+                        text=script_line,
+                        line_id=index + 1,
+                        vietnameseText=vietnamese_lines[index] if index < len(vietnamese_lines) else None,
+                    )],
                     text=script_line,
                     images=selected_media_assets,
                     mood="neutral",
@@ -364,7 +369,7 @@ class PipelineService:
         )
 
         logger.info("[pipeline:%s] Step 3/7: Resolving script lines", project_id)
-        script_lines = self._resolve_script_lines(
+        script_lines, vietnamese_lines = self._resolve_script_lines(
             article=article,
             resolved_config=resolved_config,
             script_prompt_override=script_prompt_override,
@@ -415,6 +420,7 @@ class PipelineService:
         segments = self._build_segments_from_analysis(
             project_id=project_id,
             script_lines=script_lines,
+            vietnamese_lines=vietnamese_lines,
             analysis_result=analysis_result,
             analysis_assets_by_id=analysis_assets_by_id,
             default_camera_movements=default_camera_movements,

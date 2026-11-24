@@ -86,10 +86,18 @@ const SortableTabs: React.FC<Readonly<SortableTabsProps>> = ({
           </Tooltip>
         ) : null
       }
-      style={{ marginTop: 0 }}
+      style={{ display: "flex", flexDirection: "column", height: "100%", marginTop: 0 }}
+      tabBarStyle={{ flexShrink: 0, margin: 0, paddingLeft: 16, paddingRight: 16, paddingTop: 8, zIndex: 10 }}
       {...restProps}
-      items={items}
-      onChange={onChange} // Pass AntD's onChange to the Tabs component
+      items={items.map((item) => ({
+        ...item,
+        children: (
+          <div style={{ overflowY: "auto", height: "100%", paddingLeft: 16, paddingRight: 16, paddingBottom: 16 }}>
+            {item.children}
+          </div>
+        ),
+      }))}
+      onChange={onChange}
       renderTabBar={(tabBarProps, DefaultTabBar) => (
         <DndContext
           sensors={[sensor]}

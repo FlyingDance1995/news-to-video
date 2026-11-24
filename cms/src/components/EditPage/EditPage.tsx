@@ -166,110 +166,113 @@ const EditPage: FC = () => {
       initialValues={{ tabs, config }}
       layout="vertical"
       form={form}
+      style={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}
     >
-      <Flex vertical className="p-4">
-        <Flex className="justify-between items-center py-2">
-          <Typography.Title
-            level={5}
-            className="cursor-pointer"
-            onClick={() => {
-              router.push(`/`);
-            }}
-          >
-            Videofy
-          </Typography.Title>
-          <Flex gap="small">
-            <Tooltip title="Chia sẻ video">
-              <Button
-                icon={<ShareAltOutlined />}
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  message.success("Đã sao chép URL video vào clipboard.", 5);
-                }}
-              >
-                Chia sẻ
-              </Button>
-            </Tooltip>
-            <Tooltip title="Chỉnh sửa giao diện">
-              <Button
-                type={state.editTheme ? "primary" : "default"}
-                icon={<SettingOutlined />}
-                onClick={() => (state.editTheme = !state.editTheme)}
-              />
-            </Tooltip>
-          </Flex>
-        </Flex>
-        <Flex gap="middle">
-          <div className="xl:flex-row flex-col w-full">
-            <Form.Item noStyle className="xl:flex-1 w-full" shouldUpdate>
-              {({ getFieldsValue }) => {
-                const manuscripts = getFieldsValue(true).tabs;
-                return (
-                  <div className="xl:flex-1 w-full">
-                    <PreviewOutput tabs={manuscripts} />
-                  </div>
-                );
+      {/* Header */}
+      <Flex className="justify-between items-center px-4 py-2 border-b border-gray-200">
+        <Typography.Title
+          level={5}
+          className="cursor-pointer !mb-0"
+          onClick={() => {
+            router.push(`/`);
+          }}
+        >
+          Videofy
+        </Typography.Title>
+        <Flex gap="small">
+          <Tooltip title="Chia sẻ video">
+            <Button
+              icon={<ShareAltOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                message.success("Đã sao chép URL video vào clipboard.", 5);
               }}
-            </Form.Item>
-          </div>
-          <div className="w-full xl:max-w-[800px] xl:grow">
-            {!state.editTheme ? (
-              <Form.List name={["tabs"]}>
-                {(tabItems, { move }) => {
-                  return (
-                    <SortableTabs
-                      allowAdd
-                      onAdd={() => {
-                        state.openArticleModal = true;
-                      }}
-                      activeKey={state.selectedTab}
-                      onChange={(value) => {
-                        state.selectedTab = value;
-                      }}
-                      onReorder={(from, to) => {
-                        move(from, to);
-                      }}
-                      items={tabItems.map((t, index) => {
-                        const tab = form.getFieldValue(["tabs", t.name]);
-                        return {
-                          key: tab.manuscript.meta.uniqueId!,
-                          label: (
-                            <Flex align="center">
-                              <Typography.Paragraph
-                                ellipsis={{
-                                  tooltip: tab.manuscript.meta.title,
-                                }}
-                                style={{
-                                  maxWidth: 250,
-                                  marginBottom: 0,
-                                  userSelect: "none",
-                                }}
-                              >
-                                {tab.manuscript.meta.title}
-                              </Typography.Paragraph>
-                            </Flex>
-                          ),
-                          children: (
-                            <SegmentList
-                              index={t.name}
-                              manuscript={tab.manuscript}
-                            />
-                          ),
-                          forceRender: true,
-                        };
-                      })}
-                    />
-                  );
-                }}
-              </Form.List>
-            ) : (
-              <Form.Item name="config" noStyle>
-                <EditConfig />
-              </Form.Item>
-            )}
-          </div>
+            >
+              Chia sẻ
+            </Button>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa giao diện">
+            <Button
+              type={state.editTheme ? "primary" : "default"}
+              icon={<SettingOutlined />}
+              onClick={() => (state.editTheme = !state.editTheme)}
+            />
+          </Tooltip>
         </Flex>
       </Flex>
+
+      {/* Main: 2 cột, chiều cao = viewport trừ header, không scroll ngoài */}
+      <div style={{ display: "flex", height: "calc(100dvh - 49px)", overflow: "hidden" }}>
+
+        {/* Cột trái — preview neo top, không scroll */}
+        <div style={{ flex: "0 0 40%", padding: "16px", overflowY: "hidden", display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: "flex-start", alignSelf: "flex-start", maxHeight: "calc(100dvh - 49px)" }}>
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldsValue }) => {
+              const manuscripts = getFieldsValue(true).tabs;
+              return <PreviewOutput tabs={manuscripts} />;
+            }}
+          </Form.Item>
+        </div>
+
+        {/* Cột phải — tab bar neo top, chỉ phần content scroll */}
+        <div style={{ flex: "0 0 60%", display: "flex", flexDirection: "column", borderLeft: "1px solid #f0f0f0", overflow: "hidden" }}>
+          {!state.editTheme ? (
+            <Form.List name={["tabs"]}>
+              {(tabItems, { move }) => {
+                return (
+                  <SortableTabs
+                    allowAdd
+                    onAdd={() => {
+                      state.openArticleModal = true;
+                    }}
+                    activeKey={state.selectedTab}
+                    onChange={(value) => {
+                      state.selectedTab = value;
+                    }}
+                    onReorder={(from, to) => {
+                      move(from, to);
+                    }}
+                    items={tabItems.map((t) => {
+                      const tab = form.getFieldValue(["tabs", t.name]);
+                      return {
+                        key: tab.manuscript.meta.uniqueId!,
+                        label: (
+                          <Flex align="center">
+                            <Typography.Paragraph
+                              ellipsis={{
+                                tooltip: tab.manuscript.meta.title,
+                              }}
+                              style={{
+                                maxWidth: 250,
+                                marginBottom: 0,
+                                userSelect: "none",
+                              }}
+                            >
+                              {tab.manuscript.meta.title}
+                            </Typography.Paragraph>
+                          </Flex>
+                        ),
+                        children: (
+                          <SegmentList
+                            index={t.name}
+                            manuscript={tab.manuscript}
+                          />
+                        ),
+                        forceRender: true,
+                      };
+                    })}
+                  />
+                );
+              }}
+            </Form.List>
+          ) : (
+            <Form.Item name="config" noStyle>
+              <EditConfig />
+            </Form.Item>
+          )}
+        </div>
+      </div>
+
       <AddFetchedArticle
         open={state.openArticleModal}
         setOpen={(open) => {

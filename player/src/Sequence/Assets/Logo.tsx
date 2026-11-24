@@ -17,7 +17,7 @@ export const Logo: FC<Props> = ({ logo, logoStyle }) => {
   const style: React.CSSProperties = {
     position: "absolute",
     ...parsedStyle,
-    ...(hasSize ? {} : { width: "96px" }),
+    ...(hasSize ? {} : { width: "160px" }),
   };
   const StyledLogo: FC = () => {
     return <img src={logo} style={style} alt="Logo" />;

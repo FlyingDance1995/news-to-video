@@ -381,6 +381,7 @@ function backendToProcessed(
         who: line.who || "default",
         start: line.start || 0,
         end: line.end || 0,
+        vietnameseText: (line as unknown as { vietnameseText?: string }).vietnameseText ?? undefined,
       })),
       images: mediaAssets,
       start: segment.start || 0,

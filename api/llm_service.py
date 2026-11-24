@@ -22,7 +22,7 @@ class LLMService:
         title: str,
         system_prompt: str,
         model_override: str | None = None,
-    ) -> list[str]:
+    ) -> tuple[list[str], list[str]]:
         if not self._api_key:
             raise ValueError(
                 "OPENAI_API_KEY is required to summarize article text when script_lines are not provided"
@@ -36,10 +36,16 @@ class LLMService:
             title,
             len(text),
         )
+
+        augmented_prompt = (
+            system_prompt
+            + "\n\nIMPORTANT: After generating the script lines, also provide a Vietnamese translation of each line in the same order in the 'vietnamese_lines' field. The translation should be natural Vietnamese, not literal."
+        )
+
         response = self._client.responses.parse(
             model=model_override or self._model,
             input=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": augmented_prompt},
                 {
                     "role": "user",
                     "content": json.dumps({"title": title, "text": text}),
@@ -47,7 +53,7 @@ class LLMService:
             ],
             text_format=SummarizationResult,
             temperature=0.4,
-            max_output_tokens=400,
+            max_output_tokens=600,
         )
 
         parsed = response.output_parsed
@@ -57,5 +63,11 @@ class LLMService:
         lines = [line.strip() for line in parsed.lines if line and line.strip()]
         if not lines:
             raise ValueError("OpenAI summarization produced no usable script lines")
-        logger.info("[llm] Script summary completed (lines=%d)", len(lines))
-        return lines
+
+        vietnamese_lines = [line.strip() for line in parsed.vietnamese_lines if line and line.strip()]
+        # Nếu thiếu bản dịch thì pad bằng chuỗi rỗng
+        while len(vietnamese_lines) < len(lines):
+            vietnamese_lines.append("")
+
+        logger.info("[llm] Script summary completed (lines=%d, vi_lines=%d)", len(lines), len(vietnamese_lines))
+        return lines, vietnamese_lines

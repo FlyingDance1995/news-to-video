@@ -1,2 +1,19 @@
 @layer theme, base, antd, components, utilities;
 @import "tailwindcss";
+
+/* Tabs panel chiếm hết chiều cao còn lại trong cột phải */
+.ant-tabs {
+  flex: 1;
+  min-height: 0;
+}
+.ant-tabs-content {
+  height: 100%;
+}
+.ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.ant-tabs-tabpane {
+  height: 100%;
+}
