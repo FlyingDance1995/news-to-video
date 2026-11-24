@@ -12,7 +12,7 @@
     "logo": true,
     "audio": true,
     "voice": true,
-    "music": false
+    "music": true
   },
   "people": {
     "default": {
@@ -63,8 +63,8 @@
         "icon": "#CACACA"
       }
     },
-    "backgroundMusicVolume": 0,
-    "backgroundMusic": "/api/brand-assets/soothing_music.mp3",
+    "backgroundMusicVolume": 1,
+    "backgroundMusic": "/api/brand-assets/brand_assets/dramatic_music.mp3",
     "intro": {
       "portrait": "/api/brand-assets/intro_outro_wipes/intro.webm",
       "landscape": "/api/brand-assets/intro_outro_wipes/intro-16-9-new.mp4",

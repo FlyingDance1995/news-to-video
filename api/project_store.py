@@ -126,7 +126,7 @@ class ProjectStore:
 
     def rel_to_project(self, project_id: str, path: Path) -> str:
         project_dir = self.project_path(project_id)
-        return str(path.resolve().relative_to(project_dir))
+        return path.resolve().relative_to(project_dir).as_posix()
 
     def resolve_asset_path(self, project_id: str, rel_asset_path: str) -> Path:
         path = (self.project_path(project_id) / rel_asset_path).resolve()

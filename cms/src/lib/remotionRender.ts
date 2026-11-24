@@ -77,6 +77,8 @@ export async function renderProjectVideo(input: RenderInput): Promise<string> {
     timeoutInMilliseconds: 1000 * 600,
     imageFormat: "jpeg",
     audioCodec: "aac",
+    concurrency: 1,
+    jpegQuality: 80,
   });
 
   return outputFile;
