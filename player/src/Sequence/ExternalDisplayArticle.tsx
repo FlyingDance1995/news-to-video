@@ -206,6 +206,7 @@ export const ExternalDisplayArticle: FC<Props> = ({
                     startFrom={roundToNearestFrame(segment.start)}
                     endAt={roundToNearestFrame(segment.end)}
                     src={manuscript.meta.audio.src}
+                    volume={1.5}
                   />
                 </Sequence>
               )}

@@ -51,6 +51,7 @@ const Segment: FC<SegmentProps> = ({
     opacity: isDragging ? 0.5 : 1,
     width: "100%",
   };
+
   const form = Form.useFormInstance();
   const allMedia = form.getFieldValue([
     "tabs",
@@ -59,7 +60,7 @@ const Segment: FC<SegmentProps> = ({
     "media",
   ]);
 
-  const vietnameseText: string | undefined = form.getFieldValue([
+  const originalText: string | undefined = form.getFieldValue([
     "tabs",
     manuscriptIndex,
     "manuscript",
@@ -67,125 +68,142 @@ const Segment: FC<SegmentProps> = ({
     position,
     "texts",
     0,
-    "vietnameseText",
+    "text",
   ]);
+
+  const vietnameseText: string | undefined =
+    form.getFieldValue([
+      "tabs",
+      manuscriptIndex,
+      "manuscript",
+      "segments",
+      position,
+      "texts",
+      0,
+      "vietnameseText",
+    ]) || undefined;
+
   return (
     <div ref={setNodeRef} style={style}>
-      <Card key={id} className="w-full" classNames={{ body: "pb-0" }}>
-        <Flex align="top" gap="large" justify="space-between">
-          <Flex
-            vertical
-            justify="center"
-            align="center"
-            {...attributes}
-            {...listeners}
-          >
-            <Bars3Icon
-              className="w-5 h-5 dark:text-gray-100 cursor-move"
-              aria-hidden="true"
-            />
-          </Flex>
+      <Card key={id} className="w-full" styles={{ body: { padding: "12px 16px" } }}>
+        <Row gutter={12} wrap={false} align="stretch">
 
-          <Form.Item name={[position, "mainMedia"]} className="w-[250px]">
-            <MediaAsset allMedia={allMedia} />
-          </Form.Item>
+          {/* ── Cột 1: drag handle ── */}
+          <Col flex="20px">
+            <Flex
+              vertical
+              justify="center"
+              align="center"
+              style={{ height: "100%", cursor: "move" }}
+              {...attributes}
+              {...listeners}
+            >
+              <Bars3Icon className="w-4 h-4 dark:text-gray-100" aria-hidden="true" />
+            </Flex>
+          </Col>
 
-          <Flex vertical flex="auto">
-            <Row>
-              <Col span={24}>
-                <Form.Item>
-                  <Form.Item noStyle name={[position, "text"]}>
-                    <Input.TextArea style={{ width: "100%" }} rows={5} />
-                  </Form.Item>
-                  {vietnameseText && (
-                    <div
-                      className="mt-2 px-3 py-2 rounded text-[13px] text-gray-700 bg-gray-50 border border-gray-200"
-                      style={{ lineHeight: "1.6" }}
+          {/* ── Cột 2: media ── */}
+          <Col flex="200px">
+            <Form.Item name={[position, "mainMedia"]} style={{ margin: 0 }}>
+              <MediaAsset allMedia={allMedia} />
+            </Form.Item>
+          </Col>
+
+          {/* ── Cột 3: nội dung chính ── */}
+          <Col flex="auto">
+            <Flex vertical style={{ height: "100%" }}>
+
+              {/* Textarea + bản gốc */}
+              <Form.Item style={{ marginBottom: 6, flex: 1 }}>
+                <Form.Item noStyle name={[position, "text"]}>
+                  <Input.TextArea style={{ width: "100%" }} rows={4} />
+                </Form.Item>
+                {(vietnameseText || originalText) && (
+                  <div
+                    className="mt-1 px-3 py-2 rounded text-[12px] border"
+                    style={{
+                      lineHeight: "1.5",
+                      backgroundColor: "var(--ant-color-bg-container-disabled, #f5f5f5)",
+                      borderColor: "var(--ant-color-border, #d9d9d9)",
+                      color: "var(--ant-color-text-secondary, #666)",
+                    }}
+                  >
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wide block mb-0.5"
+                      style={{ color: "var(--ant-color-text-quaternary, #aaa)" }}
                     >
-                      <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide block mb-1">
-                        Tiếng Việt
-                      </span>
-                      {vietnameseText}
-                    </div>
-                  )}
-                  <div className="mt-1 text-[12px] text-gray-500">
-                    Thêm gợi ý phát âm trong [ngoặc vuông] sau từ
+                      {vietnameseText ? "Tiếng Việt" : "Bản gốc"}
+                    </span>
+                    {vietnameseText || originalText}
                   </div>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col span={8} key="mood">
-                <Form.Item label="Tâm trạng" name={[position, "mood"]}>
-                  <Select
-                    options={moods.map((m) => ({
-                      value: m.id,
-                      label: m.name,
-                    }))}
-                    popupMatchSelectWidth={false}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={8} key="cameraMovement">
-                <Form.Item label="Camera" name={[position, "cameraMovement"]}>
-                  <Select
-                    options={cameraMovements.map((c) => ({
-                      value: c.id,
-                      label: c.name,
-                    }))}
-                    popupMatchSelectWidth={false}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={8} key="placement">
-                <Form.Item label="Vị trí chữ" name={[position, "style"]}>
-                  <Select
-                    options={textPlacements.map((c) => ({
-                      value: c.id,
-                      label: c.name,
-                    }))}
-                    popupMatchSelectWidth={false}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Form.Item
-                name={[position, "customAudio"]}
-                label="Âm thanh tùy chỉnh"
-                className="w-full"
-              >
-                <AudioRecorder />
+                )}
+                <div
+                  className="mt-1 text-[11px]"
+                  style={{ color: "var(--ant-color-text-quaternary, #aaa)" }}
+                >
+                  Thêm gợi ý phát âm trong [ngoặc vuông] sau từ
+                </div>
               </Form.Item>
-            </Row>
-          </Flex>
-          <Form.Item>
-            <Flex vertical gap="small">
+
+              {/* Controls: 3 select + âm thanh tùy chỉnh */}
+              <Row gutter={8} align="bottom" style={{ marginBottom: 0 }}>
+                <Col span={6}>
+                  <Form.Item label="Tâm trạng" name={[position, "mood"]} style={{ marginBottom: 0 }}>
+                    <Select
+                      size="small"
+                      options={moods.map((m) => ({ value: m.id, label: m.name }))}
+                      popupMatchSelectWidth={false}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label="Camera" name={[position, "cameraMovement"]} style={{ marginBottom: 0 }}>
+                    <Select
+                      size="small"
+                      options={cameraMovements.map((c) => ({ value: c.id, label: c.name }))}
+                      popupMatchSelectWidth={false}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item label="Vị trí chữ" name={[position, "style"]} style={{ marginBottom: 0 }}>
+                    <Select
+                      size="small"
+                      options={textPlacements.map((c) => ({ value: c.id, label: c.name }))}
+                      popupMatchSelectWidth={false}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    name={[position, "customAudio"]}
+                    label="Âm thanh"
+                    style={{ marginBottom: 0 }}
+                  >
+                    <AudioRecorder size="small" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+            </Flex>
+          </Col>
+
+          {/* ── Cột 4: action buttons ── */}
+          <Col flex="36px">
+            <Flex vertical gap={6} align="center" justify="flex-start" style={{ height: "100%" }}>
               <Tooltip title="Thêm đoạn bên dưới">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={onAdd}
-                />
+                <Button size="small" type="primary" icon={<PlusOutlined />} onClick={onAdd} />
               </Tooltip>
               <Tooltip title="Nhân đôi đoạn">
-                <Button
-                  type="primary"
-                  icon={<CopyOutlined />}
-                  onClick={onDuplicate}
-                />
+                <Button size="small" type="primary" icon={<CopyOutlined />} onClick={onDuplicate} />
               </Tooltip>
               <Tooltip title="Xóa đoạn">
-                <Button
-                  danger
-                  type="primary"
-                  icon={<DeleteOutlined />}
-                  onClick={onRemove}
-                />
+                <Button size="small" danger type="primary" icon={<DeleteOutlined />} onClick={onRemove} />
               </Tooltip>
             </Flex>
-          </Form.Item>
-        </Flex>
+          </Col>
+
+        </Row>
       </Card>
     </div>
   );

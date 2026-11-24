@@ -14,11 +14,11 @@ export const Intro: FC<Props> = ({ asset, introDuration }) => {
 
   return (
     <Sequence durationInFrames={introDuration} premountFor={10}>
-      {/* Reverted to use portrait/landscape from asset */}
+      {/* muted=true: intro video plays silently */}
       {isPortrait ? (
-        <OffthreadVideo transparent src={asset.portrait} />
+        <OffthreadVideo transparent src={asset.portrait} muted />
       ) : (
-        <OffthreadVideo transparent src={asset.landscape} />
+        <OffthreadVideo transparent src={asset.landscape} muted />
       )}
     </Sequence>
   );

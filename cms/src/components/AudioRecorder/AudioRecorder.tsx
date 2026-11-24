@@ -18,12 +18,14 @@ export interface AudioRecorderProps {
   value?: { src?: string; length?: number };
   onChange?: (audio: { src?: string; length?: number }) => void;
   onDelete?: () => void;
+  size?: "small" | "middle" | "large";
 }
 
 const AudioRecorder: React.FC<AudioRecorderProps> = ({
   value,
   onChange = () => {},
   onDelete = () => {},
+  size = "middle",
 }) => {
   const state = useReactive({
     isRecording: false,
@@ -182,10 +184,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   }, []);
 
   return (
-    <div className="flex items-center p-2 border border-gray-700 rounded w-full">
-      <Space>
+    <div className="flex items-center p-1 border border-gray-700 rounded w-full">
+      <Space size={4}>
         <Tooltip title={state.isRecording ? "Stop" : "Record custom audio"}>
           <Button
+            size={size}
             icon={
               state.isRecording ? (
                 <StopFilled className="text-red-500" />
@@ -201,6 +204,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         {value?.src && !state.isRecording && (
           <Tooltip title="Play">
             <Button
+              size={size}
               icon={
                 state.isPlaying ? <PauseOutlined /> : <CaretRightOutlined />
               }
@@ -215,21 +219,21 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
           value?.src &&
           !state.isRecording &&
           state.audioDuration > 0 && (
-            <Text>{state.audioDuration.toFixed(1)}s</Text>
+            <Text style={{ fontSize: size === "small" ? 11 : 14 }}>{state.audioDuration.toFixed(1)}s</Text>
           )}
         {!state.isSaving &&
           value?.src &&
           !state.isRecording &&
-          !state.audioDuration && <Text>Loading audio...</Text>}
+          !state.audioDuration && <Text style={{ fontSize: size === "small" ? 11 : 14 }}>Loading...</Text>}
         {state.isRecording && (
-          <Text className="text-red-500">
-            Recording... ({state.duration.toFixed(0)}s)
+          <Text className="text-red-500" style={{ fontSize: size === "small" ? 11 : 14 }}>
+            {state.duration.toFixed(0)}s
           </Text>
         )}
       </div>
       {value?.src && !state.isRecording && (
         <Tooltip title="Delete recording">
-          <Button icon={<DeleteOutlined />} onClick={handleDelete} danger />
+          <Button size={size} icon={<DeleteOutlined />} onClick={handleDelete} danger />
         </Tooltip>
       )}
     </div>
