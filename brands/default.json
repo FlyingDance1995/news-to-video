@@ -1,8 +1,8 @@
 {
   "brand_name": "Default",
   "openai": {
-    "manuscriptModel": "gpt-4o",
-    "mediaModel": "gpt-4o"
+    "manuscriptModel": "gemini-3.8-flash",
+    "mediaModel": "gemini-3.8-flash"
   },
   "options": {
     "segmentPauseSeconds": 0.4

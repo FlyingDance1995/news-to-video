@@ -25,7 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     store = ProjectStore(settings.projects_root_abs)
     resolver = ConfigResolver(settings.config_root_abs)
-    llm = LLMService(api_key=settings.openai_api_key, model=settings.openai_model)
+    llm = LLMService(api_key=settings.openai_api_key, model=settings.openai_model, base_url=settings.openai_base_url)
     tts = ElevenLabsService(
         api_key=settings.elevenlabs_api_key,
         voice_id="",
@@ -35,6 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     asset_analysis = AssetAnalysisService(
         store=store,
         openai_api_key=settings.openai_api_key,
+        openai_base_url=settings.openai_base_url,
         ffmpeg_bin=settings.ffmpeg_bin,
         ffprobe_bin=settings.ffprobe_bin,
     )

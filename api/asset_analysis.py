@@ -3,6 +3,8 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
+import time
 import subprocess
 import sys
 import time
@@ -11,13 +13,42 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from pydantic import BaseModel
 
 from .project_store import ProjectStore
 
 logger = logging.getLogger(__name__)
 
+
+def _extract_json(text: str) -> dict | None:
+    """Extract the first JSON object from text, tolerating surrounding prose or truncation."""
+    text = text.strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    fenced = re.sub(r"^```(?:json)?\s*", "", text, flags=re.MULTILINE)
+    fenced = re.sub(r"\s*```$", "", fenced, flags=re.MULTILINE).strip()
+    try:
+        return json.loads(fenced)
+    except json.JSONDecodeError:
+        pass
+    start = text.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    for i, ch in enumerate(text[start:], start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start : i + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
 
 class DescriptionResult(BaseModel):
     description: str
@@ -166,6 +197,20 @@ def _is_valid_hotspot(value: Any) -> bool:
     return True
 
 
+def _call_with_retry(fn, max_retries: int = 4):
+    """Call fn(), retrying with exponential backoff on RateLimitError."""
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except RateLimitError as exc:
+            if attempt < max_retries - 1:
+                wait = 10 * (2 ** attempt)  # 10s, 20s, 40s
+                logger.warning("[asset-analysis] Rate limited (429), retrying in %ds (attempt %d/%d)", wait, attempt + 1, max_retries)
+                time.sleep(wait)
+            else:
+                raise exc
+
+
 class AssetAnalysisService:
     def __init__(
         self,
@@ -173,11 +218,18 @@ class AssetAnalysisService:
         openai_api_key: str,
         ffmpeg_bin: str,
         ffprobe_bin: str,
+        openai_base_url: str = "",
     ):
         self._store = store
         self._ffmpeg_bin = ffmpeg_bin
         self._ffprobe_bin = ffprobe_bin
-        self._client = OpenAI(api_key=openai_api_key) if openai_api_key else None
+        if openai_api_key:
+            kwargs: dict = {"api_key": openai_api_key}
+            if openai_base_url:
+                kwargs["base_url"] = openai_base_url
+            self._client = OpenAI(**kwargs)
+        else:
+            self._client = None
 
     def analyze(
         self,
@@ -685,15 +737,15 @@ class AssetAnalysisService:
                 model,
             )
             data_url = _to_data_url(image_path)
-            response = self._client.responses.parse(
+            response = _call_with_retry(lambda: self._client.chat.completions.create(
                 model=model,
-                input=[
+                messages=[
                     {"role": "system", "content": describe_prompt},
                     {
                         "role": "user",
                         "content": [
                             {
-                                "type": "input_text",
+                                "type": "text",
                                 "text": json.dumps(
                                     {
                                         "asset_id": fallback_asset.get("asset_id"),
@@ -704,15 +756,32 @@ class AssetAnalysisService:
                                     ensure_ascii=False,
                                 ),
                             },
-                            {"type": "input_image", "image_url": data_url},
+                            {"type": "image_url", "image_url": {"url": data_url}},
                         ],
                     },
                 ],
-                text_format=DescriptionResult,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "DescriptionResult",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {"description": {"type": "string"}},
+                            "required": ["description"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
                 temperature=0.2,
-                max_output_tokens=180,
-            )
-            parsed = response.output_parsed
+                max_tokens=180,
+            ))
+            raw = response.choices[0].message.content or ""
+            try:
+                data = _extract_json(raw)
+                parsed = DescriptionResult.model_validate(data) if data else None
+            except Exception:
+                parsed = None
             if parsed and parsed.description.strip():
                 logger.info(
                     "[asset-analysis] Description completed for asset %s",
@@ -840,9 +909,9 @@ class AssetAnalysisService:
                 len(script_lines),
                 len(candidate_assets),
             )
-            response = self._client.responses.parse(
+            response = _call_with_retry(lambda: self._client.chat.completions.create(
                 model=model,
-                input=[
+                messages=[
                     {"role": "system", "content": placement_prompt},
                     {
                         "role": "user",
@@ -868,11 +937,33 @@ class AssetAnalysisService:
                         ),
                     },
                 ],
-                text_format=PlacementResult,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "PlacementResult",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "asset_ids": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                }
+                            },
+                            "required": ["asset_ids"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
                 temperature=0.2,
-                max_output_tokens=300,
-            )
-            parsed = response.output_parsed
+                max_tokens=300,
+            ))
+            raw = response.choices[0].message.content or ""
+            try:
+                data = _extract_json(raw)
+                parsed = PlacementResult.model_validate(data) if data else None
+            except Exception:
+                parsed = None
             if parsed is None:
                 return []
             selected_ids = [

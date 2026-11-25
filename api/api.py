@@ -102,6 +102,9 @@ def generate_project(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ConfigResolverError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("[api] /generate unexpected error for project '%s': %s", project_id, exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     logger.info(
         "[api] /generate finished for project '%s' (segments=%d)",
@@ -128,6 +131,9 @@ def process_project(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ConfigResolverError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("[api] /process unexpected error for project '%s': %s", project_id, exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return GenerationResponse(
         project_id=project_id,
